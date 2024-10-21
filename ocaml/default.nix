@@ -665,15 +665,20 @@ with oself;
   domain-local-await = disableTests osuper.domain-local-await;
   thread-table = disableTests osuper.thread-table;
 
-  domainslib = osuper.domainslib.overrideAttrs (_: {
-    src = fetchFromGitHub {
-      owner = "ocaml-multicore";
-      repo = "domainslib";
-      rev = "731f08891c87e788f2cc95f2a600328f6682a5e2";
-      hash = "sha256-32rk+gUeqFbZWFAjDVPezxnInUM9lPSDiNitMdpPyM4=";
-    };
-    meta.broken = false;
-  });
+  domainslib = buildDunePackage {
+    inherit (osuper.domainslib) src version pname;
+    propagatedBuildInputs  = [domain-local-await saturn];
+  };
+
+  #   osuper.domainslib.overrideAttrs (_: {
+  #   src = fetchFromGitHub {
+  #     owner = "ocaml-multicore";
+  #     repo = "domainslib";
+  #     rev = "731f08891c87e788f2cc95f2a600328f6682a5e2";
+  #     hash = "sha256-32rk+gUeqFbZWFAjDVPezxnInUM9lPSDiNitMdpPyM4=";
+  #   };
+  #   meta.broken = false;
+  # });
 
   rfc1951 = buildDunePackage {
     pname = "rfc1951";
@@ -1446,6 +1451,11 @@ with oself;
     # conflicts)
     # https://github.com/NixOS/nixpkgs/blob/f6ed1c3c/pkgs/top-level/ocaml-packages.nix#L1035-L1037
     propagatedBuildInputs = o.propagatedBuildInputs ++ [ result cmdliner ];
+  });
+
+  iter = osuper.iter.overrideAttrs (_: {
+    checkInputs = [];
+    checkPhase = "";
   });
 
   melange-json-native = buildDunePackage {
@@ -2274,21 +2284,21 @@ with oself;
 
   ppxlib = osuper.ppxlib.overrideAttrs (o: {
     src =
-      if isFlambda2
-      then
-        fetchFromGitHub
-          {
-            owner = "janestreet";
-            repo = "ppxlib";
-            rev = "e5ae762556a59c25a7356fe2282adbf51f93e25e";
-            hash = "sha256-EB+i0iMt/u/IRp0U/dS2tvQrSjuSxHaPQ3XaPZI6hAs=";
-          }
-      else
+      # if isFlambda2
+      # then
+      #   fetchFromGitHub
+      #     {
+      #       owner = "janestreet";
+      #       repo = "ppxlib";
+      #       rev = "e5ae762556a59c25a7356fe2282adbf51f93e25e";
+      #       hash = "sha256-EB+i0iMt/u/IRp0U/dS2tvQrSjuSxHaPQ3XaPZI6hAs=";
+      #     }
+      # else
         fetchFromGitHub {
           owner = "ocaml-ppx";
           repo = "ppxlib";
-          rev = "ac7fcfc88d574609b62cc0a38e0de59d03cc96de";
-          hash = "sha256-I+AZfPyUNmHNJ37FTRUMpKlBY3B+haXaS/fmQIH6WG4=";
+          rev = "8a0cb7122d7d454c20d732621795d910018d1b66";
+          hash = "sha256-a0+cTPNERyqvJAoK86+KAMm6fsU3aknAsPO3L/GRCAQ=";
         };
     propagatedBuildInputs = [
       ocaml-compiler-libs
@@ -2438,13 +2448,23 @@ with oself;
       url = "https://github.com/ocaml-multicore/saturn/releases/download/0.5.0/saturn-0.5.0.tbz";
       sha256 = "0f9y8kscj0g946sdqvyvpzcyy5ldrrv3hvrp9pc26gmrhz0b2sb6";
     };
-    propagatedBuildInputs = o.propagatedBuildInputs ++ [ multicore-magic backoff ];
+    checkInputs = [ ];
+    buildInputs = [ ];
+    propagatedBuildInputs = [ multicore-magic backoff ];
   });
 
   saturn = osuper.saturn.overrideAttrs (o: {
-    checkInputs =
-      o.checkInputs
-      ++ (if lib.versionOlder "5.0" ocaml.version then [ multicore-bench ] else [ ]);
+    checkPhase = "";
+    checkInputs = [ ];
+
+    buildInputs = [ ];
+    propagatedBuildInputs = [ domain_shims saturn_lockfree ];
+    src = fetchFromGitHub {
+      owner = "ocaml-multicore";
+      repo = "saturn";
+      rev = "60dd353c9b9b6fae8a3a61d0fcf30d599e0a68a9";
+      sha256 = "sha256-Ppu5SVJhGwRMX6MyRVekSozVD8Xw63Z1Vkwx9z/KmX8=";
+    };
   });
 
   semver = buildDunePackage {

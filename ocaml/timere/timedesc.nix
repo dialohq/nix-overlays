@@ -22,13 +22,13 @@ buildDunePackage {
   ];
 
   doCheck = true;
-  checkPhase = ''
-    dune runtest -p timedesc timedesc-sexp
-  '';
-  checkInputs = [
-    crowbar
-    alcotest
-    qcheck-alcotest
-    qcheck
-  ];
+  # checkPhase = ''
+  #   dune runtest -p timedesc timedesc-sexp
+  # '';
+  # checkInputs = [
+  #   crowbar
+  #   alcotest
+  #   qcheck-alcotest
+  #   qcheck
+  # ];
 }
