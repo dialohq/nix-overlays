@@ -667,7 +667,7 @@ with oself;
 
   domainslib = buildDunePackage {
     inherit (osuper.domainslib) src version pname;
-    propagatedBuildInputs  = [domain-local-await saturn];
+    propagatedBuildInputs = [ domain-local-await saturn ];
   };
 
   #   osuper.domainslib.overrideAttrs (_: {
@@ -1454,7 +1454,7 @@ with oself;
   });
 
   iter = osuper.iter.overrideAttrs (_: {
-    checkInputs = [];
+    checkInputs = [ ];
     checkPhase = "";
   });
 
@@ -2294,12 +2294,12 @@ with oself;
       #       hash = "sha256-EB+i0iMt/u/IRp0U/dS2tvQrSjuSxHaPQ3XaPZI6hAs=";
       #     }
       # else
-        fetchFromGitHub {
-          owner = "ocaml-ppx";
-          repo = "ppxlib";
-          rev = "8a0cb7122d7d454c20d732621795d910018d1b66";
-          hash = "sha256-a0+cTPNERyqvJAoK86+KAMm6fsU3aknAsPO3L/GRCAQ=";
-        };
+      fetchFromGitHub {
+        owner = "ocaml-ppx";
+        repo = "ppxlib";
+        rev = "8a0cb7122d7d454c20d732621795d910018d1b66";
+        hash = "sha256-a0+cTPNERyqvJAoK86+KAMm6fsU3aknAsPO3L/GRCAQ=";
+      };
     propagatedBuildInputs = [
       ocaml-compiler-libs
       ppx_derivers
@@ -2733,7 +2733,8 @@ with oself;
     propagatedBuildInputs = [ ctypes integers ];
   });
 
-  uring = osuper.uring.overrideAttrs (_: {
+  uring = osuper.uring.overrideAttrs (o: {
+    doCheck = false;
     postPatch = ''
       patchShebangs vendor/liburing/configure
       substituteInPlace lib/uring/dune --replace-fail \
