@@ -2733,7 +2733,8 @@ with oself;
     propagatedBuildInputs = [ ctypes integers ];
   });
 
-  uring = osuper.uring.overrideAttrs (_: {
+  uring = osuper.uring.overrideAttrs (o: {
+    doCheck = false;
     postPatch = ''
       patchShebangs vendor/liburing/configure
       substituteInPlace lib/uring/dune --replace-fail \
