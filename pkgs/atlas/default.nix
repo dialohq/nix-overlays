@@ -1,6 +1,7 @@
 # Pinned atlas binary (canary), fetched from ariga's release bucket —
-# nixpkgs' atlas lags behind. passthru.updateScript (swept by `nix run
-# .#update`) re-pins to whatever the -latest pointer currently serves.
+# nixpkgs' atlas lags behind. The pin (version + per-platform hashes)
+# lives in pin.json; passthru.updateScript (swept by `nix run .#update`)
+# re-pins it to whatever the -latest pointer currently serves.
 {
   stdenv,
   fetchurl,
@@ -8,44 +9,28 @@
   curl,
   jq,
   git,
-  gnused,
   gawk,
 }: let
-  version = "v1.2.4-a205a7f-canary";
-  fetchSrc =
-    if stdenv.isDarwin
-    then
-      (
-        if stdenv.isAarch64
-        then {
-          url = "https://release.ariga.io/atlas/atlas-darwin-arm64-${version}";
-          hash = "sha256-lyySXD/N9VpVL5+LWGNMvsFlejiuwD5uWP38cKPzFNo=";
-        }
-        else {
-          url = "https://release.ariga.io/atlas/atlas-darwin-amd64-${version}";
-          hash = "sha256-PNKCplNFuhcEphNJbYmjqrEEMW7GSsug4WdjChK/dfU=";
-        }
-      )
+  pin = builtins.fromJSON (builtins.readFile ./pin.json);
+  target =
+    if stdenv.isDarwin && stdenv.isAarch64
+    then "darwin-arm64"
+    else if stdenv.isDarwin
+    then "darwin-amd64"
+    else if stdenv.isLinux && stdenv.isAarch64
+    then "linux-arm64"
     else if stdenv.isLinux
-    then
-      (
-        if stdenv.isAarch64
-        then {
-          url = "https://release.ariga.io/atlas/atlas-linux-arm64-${version}";
-          hash = "sha256-W31tYFndQN8P2rv+TYIzvaeRNSj5nba2wLfDJTtYia0=";
-        }
-        else {
-          url = "https://release.ariga.io/atlas/atlas-linux-amd64-${version}";
-          hash = "sha256-569SUq7RkzrVWynAUb1h0ZCBU88zRcOHRB2LKQzjo1U=";
-        }
-      )
-    else (throw "unsupported platform to fetch atlas binary");
+    then "linux-amd64"
+    else throw "unsupported platform to fetch atlas binary";
 in
   stdenv.mkDerivation {
-    inherit version;
     name = "atlasgo";
+    version = pin.version;
 
-    src = fetchurl fetchSrc;
+    src = fetchurl {
+      url = "https://release.ariga.io/atlas/atlas-${target}-${pin.version}";
+      hash = pin.hashes.${target};
+    };
 
     dontUnpack = true;
     sourceRoot = ".";
@@ -56,15 +41,14 @@ in
       chmod +x $out/bin/atlas
     '';
 
-    # Re-pins this file to whatever ariga's `-latest` pointer currently
-    # serves: reads the version from the downloaded binary, rewrites the
-    # version string, and prefetches the four platform hashes.
+    # Reads the current upstream version off the downloaded -latest
+    # binary and regenerates pin.json with freshly prefetched hashes.
     passthru.updateScript = writeShellApplication {
       name = "update-atlas";
-      runtimeInputs = [curl jq git gnused gawk];
+      runtimeInputs = [curl jq git gawk];
       text = ''
         cd "$(git rev-parse --show-toplevel)"
-        pkg=pkgs/atlas/default.nix
+        pin=pkgs/atlas/pin.json
 
         os=$(uname -s | tr '[:upper:]' '[:lower:]')
         arch=$(uname -m)
@@ -79,22 +63,19 @@ in
         chmod +x "$tmp/atlas"
         latest=$("$tmp/atlas" version | head -1 | awk '{print $3}')
 
-        if [ "$latest" = "${version}" ]; then
-          echo "atlas already at ${version}"
+        if [ "$latest" = "${pin.version}" ]; then
+          echo "atlas already at ${pin.version}"
           exit 0
         fi
 
-        echo "updating atlas ${version} -> $latest"
-        sed -i.bak "s|${version}|$latest|" "$pkg"
-
-        # The url lines interpolate the version; only the hash below
-        # each url needs recomputing per platform.
-        for target in darwin-arm64 darwin-amd64 linux-arm64 linux-amd64; do
-          url="https://release.ariga.io/atlas/atlas-$target-$latest"
-          hash=$(nix store prefetch-file --json "$url" | jq -r .hash)
-          sed -i.bak "\|atlas-$target-|{n;s|hash = \"[^\"]*\"|hash = \"$hash\"|;}" "$pkg"
+        echo "updating atlas ${pin.version} -> $latest"
+        for t in darwin-arm64 darwin-amd64 linux-arm64 linux-amd64; do
+          hash=$(nix store prefetch-file --json "https://release.ariga.io/atlas/atlas-$t-$latest" | jq -r .hash)
+          jq --arg t "$t" --arg h "$hash" '.hashes[$t] = $h' "$pin" >"$tmp/pin.json"
+          mv "$tmp/pin.json" "$pin"
         done
-        rm -f "$pkg.bak"
+        jq --arg v "$latest" '.version = $v' "$pin" >"$tmp/pin.json"
+        mv "$tmp/pin.json" "$pin"
       '';
     };
   }

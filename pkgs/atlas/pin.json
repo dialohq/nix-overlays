@@ -1,0 +1,9 @@
+{
+  "version": "v1.2.4-a205a7f-canary",
+  "hashes": {
+    "darwin-arm64": "sha256-lyySXD/N9VpVL5+LWGNMvsFlejiuwD5uWP38cKPzFNo=",
+    "darwin-amd64": "sha256-PNKCplNFuhcEphNJbYmjqrEEMW7GSsug4WdjChK/dfU=",
+    "linux-arm64": "sha256-W31tYFndQN8P2rv+TYIzvaeRNSj5nba2wLfDJTtYia0=",
+    "linux-amd64": "sha256-569SUq7RkzrVWynAUb1h0ZCBU88zRcOHRB2LKQzjo1U="
+  }
+}
