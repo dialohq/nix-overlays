@@ -31,3 +31,5 @@ jobs:
           git add pkgs
           git commit -m "Auto-update package pins" -m "$(git diff --cached --stat)"
           git push
+
+# Note: GitHub only registers this workflow after a push touching it.
