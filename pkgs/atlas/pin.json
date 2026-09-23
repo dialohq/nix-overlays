@@ -1,9 +1,9 @@
 {
-  "version": "v1.3.4-77689b2-canary",
+  "version": "v1.3.4-a4fa48e-canary",
   "hashes": {
-    "darwin-arm64": "sha256-/vpx5WKCJZdcImKvm6Afek5qpvDGdqxx9bqdM/iVLlY=",
-    "darwin-amd64": "sha256-VmVwi0EF4k6LUPC7AjWKVrZQhmHpIg3n5l+6EV2ybUE=",
-    "linux-arm64": "sha256-Yp+MDjqJTgnYr9GvsUCdM4wmzYRBAYbyXHgDIvl2W3M=",
-    "linux-amd64": "sha256-6fBcl8mNSy6vSUCnzru78UwdNdlqkxFcr8zYhKJphjE="
+    "darwin-arm64": "sha256-9yJgVH4tkKVBai/Rr9kfxbQZ26YIpHUef1E2SgSJkuw=",
+    "darwin-amd64": "sha256-r9DL3GR0Ue+wOv7nqIkb75eMeBxZn2+9zqxSQPIvvn4=",
+    "linux-arm64": "sha256-u+flr3JGSdCBliCOWXB6UGzoCBwttcKpPNQg5LpHERU=",
+    "linux-amd64": "sha256-S7dYKxPTxy8P26y/li8jAdYChn5omDNmgwcUnmt4Rn4="
   }
 }
